@@ -20,8 +20,10 @@ function WeatherApp() {
   const [weatherData, setWeatherData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
   reuleaux.register();
 
+  // Function to determine weather icon based on conditions
   const getWeatherIcon = (condition) => {
     switch (condition.toLowerCase()) {
       case "sunny":
@@ -29,44 +31,50 @@ function WeatherApp() {
       case "clear":
         return <Cloudy size={80} color="white" />;
       case "mist":
+      case "fog":
         return <CloudFog size={80} color="grey" />;
       case "lightning":
+      case "thunder":
         return <CloudLightning size={80} color="yellow" />;
       case "cloudy":
         return <Cloud size={80} color="#B0B0B0" />;
-      case "rainy":
+      case "rain":
       case "drizzle":
-      case "light drizzle":
         return <CloudRain size={80} color="#0077B6" />;
       case "snow":
         return <Snowflake size={80} color="#A9A9A9" />;
-      case "windy":
+      case "wind":
         return <Wind size={80} color="#00A3E0" />;
       default:
         return <Sun size={80} color="#FFCC00" />;
     }
   };
 
+  // Fetch weather data from API
   const fetchWeatherData = async (query) => {
     setLoading(true);
     setError(null);
     try {
+      const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
+      console.log("API Key:", apiKey)
       const response = await fetch(
-        `http://api.weatherapi.com/v1/current.json?key=2632be236b694166ab6182917250501&q=${query}&lang=en`
+        `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${query}&lang=en`
       );
       if (!response.ok) {
         throw new Error("City not found or invalid request!");
       }
       const data = await response.json();
+      console.log("Weather Data:", data); // Debug weather data
       setWeatherData(data);
       setCity(data.location.name);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
 
+  // Fetch current location's weather
   const fetchCurrentLocationWeather = () => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -74,7 +82,7 @@ function WeatherApp() {
           const { latitude, longitude } = position.coords;
           fetchWeatherData(`${latitude},${longitude}`);
         },
-        (err) => {
+        () => {
           setError("Unable to get your location. Please search for a city.");
         }
       );
@@ -87,6 +95,7 @@ function WeatherApp() {
     fetchCurrentLocationWeather();
   }, []);
 
+  // Handle city search
   const handleSearch = (e) => {
     e.preventDefault();
     if (city.trim() === "") {
@@ -101,7 +110,6 @@ function WeatherApp() {
       <form onSubmit={handleSearch}>
         <TextField
           label="Enter City Name..."
-          id="outlined-basic"
           variant="outlined"
           sx={{
             width: { md: "800px", sm: "550px", xs: "280px" },
@@ -109,14 +117,12 @@ function WeatherApp() {
             mb: 3,
             backgroundColor: "white",
             borderRadius: "7px",
-            color: "black",
             "& .MuiOutlinedInput-root": {
               "& fieldset": {
                 border: "none",
               },
             },
           }}
-          fullWidth
           value={city}
           onChange={(e) => setCity(e.target.value)}
         />
@@ -142,7 +148,6 @@ function WeatherApp() {
 
       {error && (
         <p style={{ color: "red", marginBottom: 6 }}>
-          {" "}
           <TriangleAlert color="#d01616" /> {error}
         </p>
       )}
@@ -150,48 +155,30 @@ function WeatherApp() {
       {weatherData && (
         <div style={{ textAlign: "center" }}>
           {getWeatherIcon(weatherData.current.condition.text)}
-
-          <p>
-            <Typography
-              sx={{
-                fontSize: { md: "52px", sm: "50px", xs: "40px" },
-                fontWeight: 500,
-              }}
-            >
-              {weatherData.current.temp_c}°C
-            </Typography>
-          </p>
-          <p>
-            <Typography sx={{ fontSize: "20px", mb: 4 }}>
-              {weatherData.current.condition.text}
-            </Typography>
-          </p>
-          <p>
-            <Typography sx={{ fontSize: "20px", mb:5 }}>
-              {weatherData.location.name} {weatherData.location.region} ,{" "}
-              {weatherData.location.country}
-            </Typography>
-          </p>
-          <Stack
-            direction="row"
-            spacing={4}
-            sx={{ alignItems: "center", justifyContent: "center" }}
-          >
-            <Stack direction="column" spacing={2} sx={{ alignItems: "center", justifyContent: "center" }}>
+          <Typography sx={{ fontSize: { md: "52px", sm: "50px", xs: "40px" }, fontWeight: 500 }}>
+            {weatherData.current.temp_c}°C
+          </Typography>
+          <Typography sx={{ fontSize: "20px", mb: 4 }}>
+            {weatherData.current.condition.text}
+          </Typography>
+          <Typography sx={{ fontSize: "20px", mb: 5 }}>
+            {weatherData.location.name}, {weatherData.location.region}, {weatherData.location.country}
+          </Typography>
+          <Stack direction="row" spacing={4} sx={{ alignItems: "center", justifyContent: "center" }}>
+            <Stack direction="column" spacing={2} sx={{ alignItems: "center" }}>
               <Wind size={50} />
-              <Typography> {weatherData.current.wind_kph} kph </Typography>
-              <Typography> Wind </Typography>
-              
+              <Typography>{weatherData.current.wind_kph} kph</Typography>
+              <Typography>Wind</Typography>
             </Stack>
-            <Stack direction="column" spacing={2} sx={{ alignItems: "center", justifyContent: "center" }}>
+            <Stack direction="column" spacing={2} sx={{ alignItems: "center" }}>
               <Droplet size={50} />
-              <Typography> {weatherData.current.humidity}% </Typography>
-              <Typography> Humidity </Typography>
+              <Typography>{weatherData.current.humidity}%</Typography>
+              <Typography>Humidity</Typography>
             </Stack>
-            <Stack direction="column" spacing={2} sx={{ alignItems: "center", justifyContent: "center" }}>
+            <Stack direction="column" spacing={2} sx={{ alignItems: "center" }}>
               <ThermometerSun size={50} />
-              <Typography> {weatherData.current.heatindex_c}°C </Typography>
-              <Typography> Heat Index </Typography>
+              <Typography>{weatherData.current.feelslike_c}°C</Typography>
+              <Typography>Feels Like</Typography>
             </Stack>
           </Stack>
         </div>
