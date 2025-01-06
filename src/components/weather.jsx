@@ -29,6 +29,7 @@ function WeatherApp() {
       case "sunny":
         return <Sun size={80} color="#FFCC00" />;
       case "clear":
+        case "partly cloudy":
         return <Cloudy size={80} color="white" />;
       case "mist":
       case "fog":
