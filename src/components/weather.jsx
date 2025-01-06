@@ -36,6 +36,7 @@ function WeatherApp() {
         return <CloudFog size={80} color="grey" />;
       case "lightning":
       case "thunder":
+        case "thunderstorm":
         return <CloudLightning size={80} color="yellow" />;
       case "cloudy":
         return <Cloud size={80} color="#B0B0B0" />;
