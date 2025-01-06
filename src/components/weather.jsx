@@ -23,7 +23,7 @@ function WeatherApp() {
 
   reuleaux.register();
 
-  // Function to determine weather icon based on conditions
+  
   const getWeatherIcon = (condition) => {
     switch (condition.toLowerCase()) {
       case "sunny":
@@ -50,7 +50,7 @@ function WeatherApp() {
     }
   };
 
-  // Fetch weather data from API
+  
   const fetchWeatherData = async (query) => {
     setLoading(true);
     setError(null);
@@ -64,7 +64,7 @@ function WeatherApp() {
         throw new Error("City not found or invalid request!");
       }
       const data = await response.json();
-      console.log("Weather Data:", data); // Debug weather data
+      console.log("Weather Data:", data); 
       setWeatherData(data);
       setCity(data.location.name);
     } catch (err) {
@@ -74,7 +74,7 @@ function WeatherApp() {
     }
   };
 
-  // Fetch current location's weather
+  
   const fetchCurrentLocationWeather = () => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -95,7 +95,7 @@ function WeatherApp() {
     fetchCurrentLocationWeather();
   }, []);
 
-  // Handle city search
+  
   const handleSearch = (e) => {
     e.preventDefault();
     if (city.trim() === "") {
