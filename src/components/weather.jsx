@@ -24,6 +24,8 @@ function WeatherApp() {
     background: "linear-gradient(to top, #87CEEB, #FFFFFF)", 
   });
 
+  reuleaux.register();
+
   const getWeatherIcon = (condition) => {
     switch (condition.toLowerCase()) {
       case "sunny":
@@ -135,20 +137,35 @@ function WeatherApp() {
   }, [backgroundStyle]);
 
   useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          fetchWeatherData(`${latitude},${longitude}`);
-        },
-        () => {
-          setError("Unable to get your location. Please search for a city.");
+    const requestLocation = async () => {
+      if ("geolocation" in navigator) {
+        try {
+          const permission = await navigator.permissions.query({ name: "geolocation" });
+          
+          if (permission.state === "granted" || permission.state === "prompt") {
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                const { latitude, longitude } = position.coords;
+                fetchWeatherData(`${latitude},${longitude}`);
+              },
+              (error) => {
+                setError("Unable to retrieve location. Please search for a city.");
+              }
+            );
+          } else {
+            setError("Location access denied. Please search for a city.");
+          }
+        } catch (err) {
+          setError("Unable to check location permission. Please search for a city.");
         }
-      );
-    } else {
-      setError("Geolocation is not supported by your browser.");
-    }
+      } else {
+        setError("Geolocation is not supported by your browser.");
+      }
+    };
+  
+    requestLocation();
   }, []);
+  
 
   const handleSearch = (e) => {
     e.preventDefault();
